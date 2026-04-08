@@ -1,0 +1,182 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: voice
+    description: Voice cloning and TTS operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /clone-voice:
+    post:
+      operationId: cloneVoice
+      tags: [voice]
+      summary: Clone a voice from audio recordings
+      description: Accepts multiple audio files and creates an ElevenLabs voice clone
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                name:
+                  type: string
+              required:
+                - files
+      responses:
+        "200":
+          description: Voice clone created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloneVoiceResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /speak:
+    post:
+      operationId: speak
+      tags: [voice]
+      summary: Convert text to speech using a cloned voice
+      description: Sends text to ElevenLabs TTS and returns audio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpeakRequest"
+      responses:
+        "200":
+          description: Audio binary (audio/mpeg)
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /expand-phrase:
+    post:
+      operationId: expandPhrase
+      tags: [voice]
+      summary: Expand a short phrase into a natural sentence
+      description: Expands short phrases into longer, natural sentences for TTS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpandPhraseRequest"
+      responses:
+        "200":
+          description: Expanded phrase
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpandPhraseResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    CloneVoiceResponse:
+      type: object
+      properties:
+        voice_id:
+          type: string
+      required:
+        - voice_id
+
+    SpeakRequest:
+      type: object
+      properties:
+        text:
+          type: string
+        voice_id:
+          type: string
+      required:
+        - text
+        - voice_id
+
+    ExpandPhraseRequest:
+      type: object
+      properties:
+        text:
+          type: string
+      required:
+        - text
+
+    ExpandPhraseResponse:
+      type: object
+      properties:
+        expanded_text:
+          type: string
+      required:
+        - expanded_text
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
