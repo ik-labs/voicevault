@@ -6,10 +6,11 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
   Loader2, Play, Download, Sparkles, Wand2, Send,
-  MessageSquarePlus, X, Share2
+  MessageSquarePlus, X, Share2, MessageCircle, Keyboard
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useExpandPhrase } from "@workspace/api-client-react";
+import ConversationMode from "./ConversationMode";
 
 const QUICK_PHRASES = [
   { label: "Good morning" },
@@ -39,6 +40,7 @@ export default function Playground() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [voiceId, setVoiceId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"type" | "convo">("type");
 
   // --- Quick speak ---
   const [text, setText] = useState("");
@@ -208,15 +210,60 @@ export default function Playground() {
   if (!voiceId) return null;
 
   return (
-    <div className="min-h-[100dvh] w-full max-w-4xl mx-auto p-4 md:p-8 flex flex-col space-y-8 bg-background text-foreground animate-in fade-in duration-500">
+    <div className="min-h-[100dvh] w-full max-w-4xl mx-auto p-4 md:p-8 flex flex-col space-y-6 bg-background text-foreground animate-in fade-in duration-500">
 
       {/* Header */}
       <header className="flex flex-col items-center justify-center py-6 text-center space-y-2 border-b border-border">
         <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
           Your Voice is Ready! <Sparkles className="w-8 h-8 text-[hsl(var(--success))]" />
         </h1>
-        <p className="text-muted-foreground text-lg">Type anything to hear it in your voice.</p>
+        <p className="text-muted-foreground text-lg">Speak in your voice — type or have a live conversation.</p>
       </header>
+
+      {/* Tab switcher */}
+      <div
+        className="flex rounded-2xl bg-secondary/50 p-1 gap-1"
+        role="tablist"
+        aria-label="Playground modes"
+      >
+        <Button
+          role="tab"
+          aria-selected={activeTab === "type"}
+          variant="ghost"
+          className={`flex-1 min-h-[52px] rounded-xl text-base font-semibold gap-2 transition-all ${
+            activeTab === "type"
+              ? "bg-background shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setActiveTab("type")}
+        >
+          <Keyboard className="w-4 h-4" />
+          Type to Speak
+        </Button>
+        <Button
+          role="tab"
+          aria-selected={activeTab === "convo"}
+          variant="ghost"
+          className={`flex-1 min-h-[52px] rounded-xl text-base font-semibold gap-2 transition-all ${
+            activeTab === "convo"
+              ? "bg-background shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setActiveTab("convo")}
+        >
+          <MessageCircle className="w-4 h-4" />
+          Conversation Mode
+        </Button>
+      </div>
+
+      {/* Conversation Mode tab */}
+      {activeTab === "convo" && voiceId && (
+        <ConversationMode voiceId={voiceId} />
+      )}
+
+      {/* Type to Speak tab */}
+      {activeTab === "type" && (
+        <>
 
       {/* Quick speak */}
       <section className="flex flex-col space-y-4" aria-label="Text to speech input">
@@ -466,6 +513,9 @@ export default function Playground() {
             ))}
           </ul>
         </section>
+      )}
+
+        </>
       )}
 
     </div>
