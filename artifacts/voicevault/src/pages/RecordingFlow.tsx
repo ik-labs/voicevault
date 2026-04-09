@@ -33,6 +33,11 @@ export default function RecordingFlow() {
   const analyser = useRef<AnalyserNode | null>(null);
   const animationFrame = useRef<number>();
   const isRecordingRef = useRef(false);
+  const currentStepRef = useRef(0);
+
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
 
   useEffect(() => {
     return () => {
@@ -86,9 +91,10 @@ export default function RecordingFlow() {
 
       mediaRecorder.current.onstop = () => {
         const blob = new Blob(audioChunks.current, { type: "audio/webm" });
+        const step = currentStepRef.current;
         setRecordings(prev => {
           const next = [...prev];
-          next[currentStep] = blob;
+          next[step] = blob;
           return next;
         });
         audioChunks.current = [];
