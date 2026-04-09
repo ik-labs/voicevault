@@ -24,7 +24,7 @@ router.post(
 
     const form = new FormData();
     form.append("name", (req.body.name as string) || "VoiceVault Clone");
-    form.append("remove_background_noise", "true");
+    form.append("remove_background_noise", "false");
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
